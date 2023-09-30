@@ -1,35 +1,77 @@
-import { StyleSheet, Text, View, Button, TextInput } from "react-native";
+import { useState } from "react";
+import { StatusBar } from "expo-status-bar";
+import { StyleSheet, View, FlatList, Button } from "react-native";
+import GoalItem from "./components/GoalItem";
+import GoalInput from "./components/GoalInput";
 
 export default function App() {
+	const [modalIsVisible, setModalIsVisible] = useState(false);
+	const [goals, setGoals] = useState([]);
+
+	const addGoalHandler = (enteredGoalText) => {
+		setGoals((currentGoals) => [
+			...currentGoals,
+			{ text: enteredGoalText, id: Date.now() },
+		]);
+		setModalIsVisible(false);
+	};
+
+	const deleteGoalHandler = (id) => {
+		setGoals((currentGoals) =>
+			currentGoals.filter((goal) => goal.id !== id)
+		);
+	};
+
+	const startAddGoalHandler = () => {
+		setModalIsVisible(true);
+	};
+
+	const endAddGoalHandler = () => {
+		setModalIsVisible(false);
+	};
+
 	return (
-		<View style={styles.appContainer}>
-			<View style={styles.inputContainer}>
-				<TextInput
-					style={styles.textInput}
-					placeholder="Your course goal!"
+		<>
+			<StatusBar style="light" />
+			<View style={styles.appContainer}>
+				<Button
+					title="Add New Goal"
+					color="#5e0acc"
+					onPress={startAddGoalHandler}
 				/>
-				<Button title="Add Goal" />
+				<GoalInput
+					onAddGoal={addGoalHandler}
+					onCancel={endAddGoalHandler}
+					visible={modalIsVisible}
+				/>
+				<View style={styles.goalsContainer}>
+					<FlatList
+						data={goals}
+						keyExtractor={(item) => item.id}
+						renderItem={(itemData) => {
+							return (
+								<GoalItem
+									text={itemData.item.text}
+									id={itemData.item.id}
+									onDeleteItem={deleteGoalHandler}
+								/>
+							);
+						}}
+					/>
+				</View>
 			</View>
-			<View>
-				<Text>List of goals </Text>
-			</View>
-		</View>
+		</>
 	);
 }
 
 const styles = StyleSheet.create({
 	appContainer: {
-		padding: 50,
+		flex: 1,
+		paddingTop: 50,
+		paddingHorizontal: 16,
 	},
-	inputContainer: {
-		flexDirection: "row",
-		justifyContent: "space-between",
-	},
-	textInput: {
-		borderWidth: 1,
-		borderColor: "#cccccc",
-		width: "80%",
-		marginRight: 8,
-		padding: 8,
+	goalsContainer: {
+		flex: 5,
+		marginTop: 20,
 	},
 });
